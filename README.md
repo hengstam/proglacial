@@ -22,7 +22,7 @@ The following scripts are provided:
 How to duplicate the bug: Download the .7z from the google drive /data/proglacialRasters and extract the folder /rasters into the root directory of this repository. 
 
 1) Running vectorize.py should die on c2018_1.tif. 
-2) If you edit vectorize.py, uncommenting the final line and commenting out the for loop above it, it'll process a much smaller raster. Uncomment the section after line 48 to use opencv. Running it will run out of memory, but running the identical commands
+2) If you edit vectorize.py, uncommenting the final line and commenting out the for loop above it, it'll process a much smaller raster. Uncomment the section after line 48 to use opencv. Running it will run out of memory, but running the identical commands:
 
 	python 
 	import cv2

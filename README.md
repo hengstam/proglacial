@@ -2,13 +2,13 @@ If you're working in the conda environment I wrote this in, you
 may need to run the following to allow ArcPy (a 32 bit program)
 to run in Python 2.7:
 
-	```set CONDA_FORCE_32BIT=1
+	set CONDA_FORCE_32BIT=1
 	activate py27_32
-	cd C:\Users\hengstam\Desktop\projects\proglacial```
+	cd C:\Users\hengstam\Desktop\projects\proglacial
 
 The following scripts are provided:
 
-	```vectorize.py [rasterName]
+	vectorize.py [rasterName]
 
 		The argument it takes is the name of a .tif in /rasters.
 		For example, /rasters/exampleRaster.tif would be run as
@@ -17,7 +17,7 @@ The following scripts are provided:
 
 	generateBuffer [shapefilePath] [outputPath] [bufferSizeInKm]
 
-		Takes arguments for the path within the roglacial directory. For example, `python generateBuffer misc/01_rgi60_Alaska/01_rgi60_Alaska.shp misc/buffers/rgi_buffer_5km 5` would generate a 5 km buffer of the 01_rgi60_Alaska.shp file.```
+		Takes arguments for the path within the roglacial directory. For example, `python generateBuffer misc/01_rgi60_Alaska/01_rgi60_Alaska.shp misc/buffers/rgi_buffer_5km 5` would generate a 5 km buffer of the 01_rgi60_Alaska.shp file.
 
 How to duplicate the bug: Download the .7z from the google drive /data/proglacialRasters and extract the folder /rasters into the root directory of this repository. 
 

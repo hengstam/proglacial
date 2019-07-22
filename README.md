@@ -19,6 +19,8 @@ The following scripts are provided:
 
 		Takes arguments for the path within the roglacial directory. For example, `python generateBuffer misc/01_rgi60_Alaska/01_rgi60_Alaska.shp misc/buffers/rgi_buffer_5km 5` would generate a 5 km buffer of the 01_rgi60_Alaska.shp file.
 
+	findVectorError (Cannot be run in 32 bit mode!!!)	
+
 How to duplicate the bug: Download the .7z from the google drive /data/proglacialRasters and extract the folder /rasters into the root directory of this repository. 
 
 1) Running vectorize.py should die on c2018_1.tif. 

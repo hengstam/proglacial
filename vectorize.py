@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from glob import glob
 import gc
+import os
 
 # Define the function we'll run from the command line
 def objectifyRaster (rasterName):
@@ -23,7 +24,7 @@ def objectifyRaster (rasterName):
 	#####################################################
 	####				VECTORIZE IT				 ####
 	#####################################################
-	inputRasterFilename = '/rasters/' + rasterName + '.tif'
+	inputRasterFilename = '/rasters/areas/classif/' + rasterName + '.tif'
 	# Set up temp files names
 	tempRasterFilename = '/temp/rasters/' + rasterName + '.tif'
 	tempMorphRasterFilename = '/temp/rasters/' + rasterName + '_morph.tif'
@@ -32,6 +33,8 @@ def objectifyRaster (rasterName):
 	outputShapesFilename = "/polygons/" + rasterName + ".shp"
 	# Clear potiential old output
 	if arcpy.Exists(tempRasterFilename):
+		arcpy.Delete_management(tempRasterFilename)
+	if arcpy.Exists(tempMorphRasterFilename):
 		arcpy.Delete_management(tempRasterFilename)
 	if arcpy.Exists(tempShapesFilename):
 		arcpy.Delete_management(tempShapesFilename)
@@ -158,12 +161,9 @@ def objectifyRaster (rasterName):
 # Execute
 if __name__ == "__main__":
 	print "Loading script..."
-	for filepath in [
-		"c2018_0", "c2018_1", "c2018_2", "c2018_3", 
-		"c2017_0", "c2017_1", "c2017_2", "c2017_3", 
-		"c2016_0", "c2016_1", "c2016_2", "c2016_3", 
-		"c2015_0", "c2015_1", "c2015_2", "c2015_3", 
-		"c2014_0", "c2014_1", "c2014_2", "c2014_3", 
-	]:
+	l=os.listdir(r"C:\Users\hengstam\Desktop\projects\proglacial\rasters\areas\classif")
+	li=[x.split('.')[0] for x in l]
+	print li
+	for filepath in ["A1_M7_VIS_LVR3_DEM", "A2_M7_VIS_LVR3_DEM", "A3_M7_VIS_LVR3_DEM"]:
 		objectifyRaster(filepath)
 	# objectifyRaster("tiny")

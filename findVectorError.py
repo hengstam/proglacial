@@ -7,7 +7,7 @@ import os
 import shutil
 import utm
 
-## Thanks Dr. Armstrong for this utility function
+## Thanks Dr. Armstrong for these utility functions
 def getPolyAream2 (polyGeom):
 	# This assumes the polygon has lat/lon coordinates (epsg 4326, wgs84)
 	# input = shapely polygon geometry with lat/lon coordinates
@@ -58,7 +58,7 @@ def findArea (sourceVectorName):
 	# Load the environment
 	root = 'C:/Users/hengstam/Desktop/projects/proglacial'
 	# Get feature class filenames
-	sourceFile = root + '/polygons/' + sourceVectorName + '.shp'
+	sourceFile = root + sourceVectorName + '.shp'
 	tempFile = root + '/temp/polygons/findAreaSwapFile.shp'
 	# Clear the output
 	if os.path.exists(tempFile):
@@ -101,44 +101,106 @@ def findVectorError (truthVectorName, testVectorName):
 	# Get feature class filenames
 	truthFile = root + '/polygons/' + truthVectorName + '.shp'
 	testFile = root + '/polygons/' + testVectorName + '.shp'
-	tempFile = root + '/temp/polygons/findVectorErrorAreaTempFile.shp'
-	outputFile = root + '/polygons/' + truthVectorName + '_' + testVectorName + '_intersect.shp'
-	# Clear the output
-	if os.path.exists(tempFile):
-		os.remove(tempFile)
-	if os.path.exists(outputFile):
-		os.remove(outputFile)
-	# Define schema for output
-	schema = {
-		'geometry': 'Polygon',
-		'properties': {
-			'areakm2': 'float'
-		}
-	}
 	## Perform intersection
-	# Keep track of how many features we've found
-	featureCount = 0
+	# Keep track of how much area we've found
+	truthArea = 0.0
+	testArea = 0.0
+	intersectionArea = 0.0
+	# Open features
+	truthFeatureClass = fiona.open(truthFile)
+	testFeatureClass = fiona.open(testFile)
+	# Make feature lists
+	truthFeatures = [geometry.shape(truth['geometry']) for truth in truthFeatureClass]
+	testFeatures = [geometry.shape(test['geometry']) for test in testFeatureClass]
 	# Make new shapefile with intersection
-	print "Finding intersection between " + truthVectorName + " and " + testVectorName + "."
-	with fiona.open(outputFile, 'w', driver='ESRI Shapefile', schema=schema, crs=fiona.crs.from_epsg(4326)) as output: # Hardcode WGS84 as projection
-		# Iterate through features
-		for truthFeature in fiona.open(truthFile):
-			# Get geometry
-			truth = geometry.asShape(truthFeature['geometry'])
-			for testFeature in fiona.open(testFile):
-				# Get geometry
-				test = geometry.asShape(testFeature['geometry'])
-				# Save if the intersection exists
-				if test.intersects(truth):
-					featureCount += 1
-					output.write({
-						'geometry': test.intersection(truth), # Perform the intersection
-						'properties': {}
-					})
+	print "> Finding error between " + truthVectorName + " and " + testVectorName + "."
+	# Iterate through features to find intersections
+	for test in testFeatures:
+		testArea += test.area
+	for truth in truthFeatures:
+		truthArea += truth.area
+	for test in testFeatures:
+		for truth in truthFeatures:
+			if test.intersects(truth):
+				intersectionArea += test.intersection(truth).area
 	# Display result metrics
-	print str(featureCount) + " features found in intersection."
+	print "Positives identified: " + str(100*intersectionArea/truthArea)
+	print "Identifications correct: " + str(100*(1-(testArea-intersectionArea)/testArea))
 # Execute
 if __name__ == "__main__":
 	print "Loading script..."
-	for filepath in ["A1_M7_9_VIS"]:
-		findArea("area_1_lakes")
+	for filepath in [
+		"A1_M7_VIS",
+		"A1_M7_VIS_BR",
+		"A1_M7_VIS_BR_LVR1",
+		"A1_M7_VIS_BR_LVR2",
+		"A1_M7_VIS_BR_LVR3",
+		"A1_M7_VIS_BR_LVR1_DEM",
+		"A1_M7_VIS_LVR1_DEM",
+		"A1_M7_VIS_LVR3_DEM",
+		"A1_M9_VIS",
+		"A1_M9_VIS_BR",
+		"A1_M9_VIS_BR_LVR1",
+		"A1_M9_VIS_BR_LVR2",
+		"A1_M9_VIS_BR_LVR3",
+		"A1_M9_VIS_BR_LVR1_DEM",
+		"A1_M9_VIS_LVR1_DEM",
+		"A1_M7_9_VIS",
+		"A1_M7_9_VIS_BR",
+		"A1_M7_9_VIS_BR_LVR1",
+		"A1_M7_9_VIS_BR_LVR2",
+		"A1_M7_9_VIS_BR_LVR3",
+		"A1_M7_9_VIS_BR_LVR1_DEM",
+		"A1_M7_9_VIS_LVR1_DEM",
+	]:
+		findVectorError("A1_TRUTH", filepath)
+	for filepath in [
+		"A2_M7_VIS",
+		"A2_M7_VIS_BR",
+		"A2_M7_VIS_BR_LVR1",
+		"A2_M7_VIS_BR_LVR2",
+		"A2_M7_VIS_BR_LVR3",
+		"A2_M7_VIS_BR_LVR1_DEM",
+		"A2_M7_VIS_LVR1_DEM",
+		"A2_M7_VIS_LVR3_DEM",
+		"A2_M9_VIS",
+		"A2_M9_VIS_BR",
+		"A2_M9_VIS_BR_LVR1",
+		"A2_M9_VIS_BR_LVR2",
+		"A2_M9_VIS_BR_LVR3",
+		"A2_M9_VIS_BR_LVR1_DEM",
+		"A2_M9_VIS_LVR1_DEM",
+		"A2_M7_9_VIS",
+		"A2_M7_9_VIS_BR",
+		"A2_M7_9_VIS_BR_LVR1",
+		"A2_M7_9_VIS_BR_LVR2",
+		"A2_M7_9_VIS_BR_LVR3",
+		"A2_M7_9_VIS_BR_LVR1_DEM",
+		"A2_M7_9_VIS_LVR1_DEM",
+	]:
+		findVectorError("A2_TRUTH", filepath)
+	for filepath in [
+		"A3_M7_VIS",
+		"A3_M7_VIS_BR",
+		"A3_M7_VIS_BR_LVR1",
+		"A3_M7_VIS_BR_LVR2",
+		"A3_M7_VIS_BR_LVR3",
+		"A3_M7_VIS_BR_LVR1_DEM",
+		"A3_M7_VIS_LVR1_DEM",
+		"A3_M7_VIS_LVR3_DEM",
+		"A3_M9_VIS",
+		"A3_M9_VIS_BR",
+		"A3_M9_VIS_BR_LVR1",
+		"A3_M9_VIS_BR_LVR2",
+		"A3_M9_VIS_BR_LVR3",
+		"A3_M9_VIS_BR_LVR1_DEM",
+		"A3_M9_VIS_LVR1_DEM",
+		"A3_M7_9_VIS",
+		"A3_M7_9_VIS_BR",
+		"A3_M7_9_VIS_BR_LVR1",
+		"A3_M7_9_VIS_BR_LVR2",
+		"A3_M7_9_VIS_BR_LVR3",
+		"A3_M7_9_VIS_BR_LVR1_DEM",
+		"A3_M7_9_VIS_LVR1_DEM",
+	]:
+		findVectorError("A3_TRUTH", filepath)

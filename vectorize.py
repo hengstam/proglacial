@@ -42,7 +42,7 @@ def objectifyRaster (rasterName):
 		arcpy.Delete_management(outputShapesFilename)
 	print "Converting raster " + inputRasterFilename + " into " + outputShapesFilename + '...'
 	# Select water and save it to a temp location for morphological operations
-	waterRasterBeforeMorpOps = arcpy.sa.Con(inputRasterFilename, 1, 0, "Value <= 11 AND Value >= 6")
+	waterRasterBeforeMorpOps = arcpy.sa.Con(inputRasterFilename, 1, 0, "Value <= 9 AND Value >= 6")
 	waterRasterBeforeMorpOps.save(env.workspace + tempRasterFilename)
 	arcpy.CopyRaster_management(env.workspace+tempRasterFilename, env.workspace+tempMorphRasterFilename , pixel_type = "1_BIT")
 	# Move to the next step
@@ -164,6 +164,5 @@ if __name__ == "__main__":
 	l=os.listdir(r"C:\Users\hengstam\Desktop\projects\proglacial\rasters\areas\classif")
 	li=[x.split('.')[0] for x in l]
 	print li
-	for filepath in ["A1_M7_VIS_LVR3_DEM", "A2_M7_VIS_LVR3_DEM", "A3_M7_VIS_LVR3_DEM"]:
+	for filepath in li: #["A1_M7_VIS_LVR3_DEM", "A2_M7_VIS_LVR3_DEM", "A3_M7_VIS_LVR3_DEM"]:
 		objectifyRaster(filepath)
-	# objectifyRaster("tiny")

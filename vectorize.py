@@ -24,13 +24,13 @@ def objectifyRaster (rasterName):
 	#####################################################
 	####				VECTORIZE IT				 ####
 	#####################################################
-	inputRasterFilename = '/rasters/areas/classif/' + rasterName + '.tif'
+	inputRasterFilename = '/rasters/annual/' + rasterName + '.tif'
 	# Set up temp files names
 	tempRasterFilename = '/temp/rasters/' + rasterName + '.tif'
 	tempMorphRasterFilename = '/temp/rasters/' + rasterName + '_morph.tif'
 	tempShapesFilename = '/temp/polygons/' + rasterName + '.shp'
 	# Set up our output
-	outputShapesFilename = "/polygons/" + rasterName + ".shp"
+	outputShapesFilename = "/polygons/annual/" + rasterName + ".shp"
 	# Clear potiential old output
 	if arcpy.Exists(tempRasterFilename):
 		arcpy.Delete_management(tempRasterFilename)
@@ -42,7 +42,7 @@ def objectifyRaster (rasterName):
 		arcpy.Delete_management(outputShapesFilename)
 	print "Converting raster " + inputRasterFilename + " into " + outputShapesFilename + '...'
 	# Select water and save it to a temp location for morphological operations
-	waterRasterBeforeMorpOps = arcpy.sa.Con(inputRasterFilename, 1, 0, "Value <= 9 AND Value >= 6")
+	waterRasterBeforeMorpOps = arcpy.sa.Con(inputRasterFilename, 1, 0, "Value <= 6 AND Value >= 4") #"Value <= 10 AND Value >= 7")
 	waterRasterBeforeMorpOps.save(env.workspace + tempRasterFilename)
 	arcpy.CopyRaster_management(env.workspace+tempRasterFilename, env.workspace+tempMorphRasterFilename , pixel_type = "1_BIT")
 	# Move to the next step
@@ -110,7 +110,7 @@ def objectifyRaster (rasterName):
 	# Build a cursor to set our new fields
 	cursor = arcpy.da.UpdateCursor(outputShapesFilename, ["SHAPE@TRUECENTROID", "centr_x", "centr_y", "date", "loc1", "loc2"])
 	# Start summing area
-	minAreaThreshold = 0.1
+	minAreaThreshold = 0.1 # 0.001
 	# Work through all lakeOutputName in the feature class
 	for row in cursor:
 		# Write centroid values 
@@ -126,7 +126,7 @@ def objectifyRaster (rasterName):
 	del row, cursor 
 	print "Shapefiles successfully detailed."
 	################################################
-	## Only save large polygons (more than 0.1 km^2, but see above where `minAreaThreshold` is defined.)
+	## Only save large polygons (originally more than 0.1 km^2, but see above where `minAreaThreshold` is defined.)
 	print "Removing small polygons..."
 	arcpy.MakeFeatureLayer_management(outputShapesFilename, "removingSmallLakes_lyr")
 	arcpy.SelectLayerByAttribute_management("removingSmallLakes_lyr", "NEW_SELECTION", "area < " + str(minAreaThreshold))
@@ -161,8 +161,9 @@ def objectifyRaster (rasterName):
 # Execute
 if __name__ == "__main__":
 	print "Loading script..."
-	l=os.listdir(r"C:\Users\hengstam\Desktop\projects\proglacial\rasters\areas\classif")
+	l=os.listdir(r"C:\Users\hengstam\Desktop\projects\proglacial\rasters\annual")
 	li=[x.split('.')[0] for x in l]
 	print li
-	for filepath in li: #["A1_M7_VIS_LVR3_DEM", "A2_M7_VIS_LVR3_DEM", "A3_M7_VIS_LVR3_DEM"]:
+	##li = ["A1_M7_9_VIS_BR_LVR1_DEM", "A2_M7_9_VIS_BR_LVR1_DEM", "A3_M7_9_VIS_BR_LVR1_DEM"]
+	for filepath in li:
 		objectifyRaster(filepath)

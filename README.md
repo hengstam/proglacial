@@ -8,18 +8,24 @@ to run in Python 2.7:
 
 The following scripts are provided:
 
-	vectorize.py [rasterName]
+	vectorize.py 
 
-		The argument it takes is the name of a .tif in /rasters.
+		OUTDATED: The argument it takes is the name of a .tif in /rasters.
 		For example, /rasters/exampleRaster.tif would be run as
 		`python vectorize.py exampleRaster`. Will convert it to a similarly-
 		named .shp file in /polygons. Can take a moment to load if you're running it first thing.
 
-	generateBuffer [shapefilePath] [outputPath] [bufferSizeInKm]
+		Currently will process all files in /rasters/areas/classif.
+
+	generateBuffer.py [shapefilePath] [outputPath] [bufferSizeInKm]
 
 		Takes arguments for the path within the roglacial directory. For example, `python generateBuffer misc/01_rgi60_Alaska/01_rgi60_Alaska.shp misc/buffers/rgi_buffer_5km 5` would generate a 5 km buffer of the 01_rgi60_Alaska.shp file.
 
-	findVectorError (Cannot be run in 32 bit mode!!!)	
+	findVectorError.py (Cannot be run in 32 bit mode!!!)
+
+	unify.py [subdirectory of /proglacial]
+
+		
 
 How to duplicate the bug: Download the .7z from the google drive /data/proglacialRasters and extract the folder /rasters into the root directory of this repository. 
 

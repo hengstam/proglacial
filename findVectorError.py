@@ -94,13 +94,14 @@ def findArea (sourceVectorName):
 	# shutil.copyfile(tempfile, sourceFile)
 
 # This function finds the intersection 
-def findVectorError (truthVectorName, testVectorName):
+def findVectorError (truthVectorName, testVectorName, totalVectorName):
 	## Load files
 	# Load the environment
 	root = 'C:/Users/hengstam/Desktop/projects/proglacial'
 	# Get feature class filenames
 	truthFile = root + '/polygons/' + truthVectorName + '.shp'
 	testFile = root + '/polygons/' + testVectorName + '.shp'
+	totalFile = root + '/polygons/areaMaps/' + totalVectorName + '.shp'
 	## Perform intersection
 	# Keep track of how much area we've found
 	truthArea = 0.0
@@ -109,9 +110,11 @@ def findVectorError (truthVectorName, testVectorName):
 	# Open features
 	truthFeatureClass = fiona.open(truthFile)
 	testFeatureClass = fiona.open(testFile)
+	totalFeatureClass = fiona.open(totalFile)
 	# Make feature lists
 	truthFeatures = [geometry.shape(truth['geometry']) for truth in truthFeatureClass]
 	testFeatures = [geometry.shape(test['geometry']) for test in testFeatureClass]
+	totalFeatures = [geometry.shape(total['geometry']) for total in totalFeatureClass]
 	# Make new shapefile with intersection
 	print "> Finding error between " + truthVectorName + " and " + testVectorName + "."
 	# Iterate through features to find intersections
@@ -123,13 +126,20 @@ def findVectorError (truthVectorName, testVectorName):
 		for truth in truthFeatures:
 			if test.intersects(truth):
 				intersectionArea += test.intersection(truth).area
+	# Get total area
+	totalArea = totalFeatures[0].area
 	# Display result metrics
-	print "Positives identified: " + str(100*intersectionArea/truthArea)
-	print "Identifications correct: " + str(100*(1-(testArea-intersectionArea)/testArea))
+	print "Actual positives area: " + str(truthArea*1000)
+	print "All positives area: " + str(testArea*1000)
+	print "True positives area: " + str(intersectionArea*1000)
+	print "Total area: " + str(totalArea*1000)
+	# Display result metrics
+	# print "Positives identified: " + str(100*intersectionArea/truthArea)
+	# print "Identifications correct: " + str(100*(1-(testArea-intersectionArea)/testArea))
 # Execute
 if __name__ == "__main__":
 	print "Loading script..."
-	for filepath in [
+	a1list = [
 		"A1_M7_VIS",
 		"A1_M7_VIS_BR",
 		"A1_M7_VIS_BR_LVR1",
@@ -152,9 +162,8 @@ if __name__ == "__main__":
 		"A1_M7_9_VIS_BR_LVR3",
 		"A1_M7_9_VIS_BR_LVR1_DEM",
 		"A1_M7_9_VIS_LVR1_DEM",
-	]:
-		findVectorError("A1_TRUTH", filepath)
-	for filepath in [
+	]
+	a2list = [
 		"A2_M7_VIS",
 		"A2_M7_VIS_BR",
 		"A2_M7_VIS_BR_LVR1",
@@ -177,9 +186,8 @@ if __name__ == "__main__":
 		"A2_M7_9_VIS_BR_LVR3",
 		"A2_M7_9_VIS_BR_LVR1_DEM",
 		"A2_M7_9_VIS_LVR1_DEM",
-	]:
-		findVectorError("A2_TRUTH", filepath)
-	for filepath in [
+	]
+	a3list = [
 		"A3_M7_VIS",
 		"A3_M7_VIS_BR",
 		"A3_M7_VIS_BR_LVR1",
@@ -202,5 +210,16 @@ if __name__ == "__main__":
 		"A3_M7_9_VIS_BR_LVR3",
 		"A3_M7_9_VIS_BR_LVR1_DEM",
 		"A3_M7_9_VIS_LVR1_DEM",
-	]:
-		findVectorError("A3_TRUTH", filepath)
+	]
+	for filepath in a1list:	findVectorError("A1_TRUTH", filepath, 'a1-polygon')
+	# for filepath in a1list:	findVectorError("A1_TRUTH", "noRiver/" + filepath, 'a1-polygon')
+
+	for filepath in a2list:	findVectorError("A2_TRUTH", filepath, 'a2-polygon')
+	# for filepath in a2list:	findVectorError("A2_TRUTH", "noRiver/" + filepath, 'a2-polygon')
+
+	for filepath in a3list:	findVectorError("A3_TRUTH", filepath, 'a3-polygon')
+	# for filepath in a3list:	findVectorError("A3_TRUTH", "noRiver/" + filepath, 'a3-polygon')
+
+	findVectorError("A1_TRUTH", "v2/" + "A1_M7_9_VIS_BR_LVR1_DEM", 'a1-polygon')
+	findVectorError("A2_TRUTH", "v2/" + "A2_M7_9_VIS_BR_LVR1_DEM", 'a2-polygon')
+	findVectorError("A3_TRUTH", "v2/" + "A3_M7_9_VIS_BR_LVR1_DEM", 'a3-polygon')

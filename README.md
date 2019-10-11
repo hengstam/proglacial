@@ -8,14 +8,10 @@ to run in Python 2.7:
 
 The following scripts are provided:
 
-	vectorize.py 
+	vectorize.py [subfolder]
 
-		OUTDATED: The argument it takes is the name of a .tif in /rasters.
-		For example, /rasters/exampleRaster.tif would be run as
-		`python vectorize.py exampleRaster`. Will convert it to a similarly-
-		named .shp file in /polygons. Can take a moment to load if you're running it first thing.
-
-		Currently will process all files in /rasters/areas/classif.
+		The argument it takes is the subdirectory of a folder in /rasters. It will process all files in this folder. 
+		NOTE: Will output to the same subfolder in /polygons. Make sure it exists first!
 
 	generateBuffer.py [shapefilePath] [outputPath] [bufferSizeInKm]
 

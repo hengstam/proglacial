@@ -7,8 +7,11 @@ import cv2
 import hashlib
 import numpy as np
 import glob, os
+from datetime import datetime
 
 def refresh ():
+
+	logFile = open("logs/refreshMaster.log", "a")
 	
 	# Get licensed
 	if arcpy.CheckExtension("Spatial"):  
@@ -58,47 +61,73 @@ def refresh ():
 	# Iterate through all shapefiles
 	for file in glob.glob("*.shp"):
 
-		ref_id = file[:-4]
+		# Error management
+		try:
+			ref_id = file[:-4]
 
-		# Count how many things the thing has
-		number = arcpy.GetCount_management(file)
-		dates = set()
+			# Count how many things the thing has
+			number = arcpy.GetCount_management(file)
+			dates = set()
+			
+			# Iterate through all elements of that lake
+			count_cursor = arcpy.da.SearchCursor(file, ['date'])
+			for crow in count_cursor:
+				dates.add(crow[0])
+
+			print "Adding lake", ref_id, "to new master lake file. Has", number[0], "lake images over", len(dates), "dates."
+
+			# Make a union of the thing
+			arcpy.Dissolve_management(file, output)
+
+			# Get ready to add reference stuff to the thing
+			arcpy.AddField_management(output, "ref_id", "STRING")
+			arcpy.AddField_management(output, "n", "SHORT")
+			arcpy.AddField_management(output, "n_real", "SHORT")
+			arcpy.AddField_management(output, "n_ratio", "SHORT")
+
+			# This cursor will let up change up that reference id
+			cursor = arcpy.da.UpdateCursor(output, ["ref_id", "n", "n_real", "n_ratio"])
 		
-		print "Adding lake", ref_id, "to new master lake file. Has", number[0], "lake images over", len(dates), "dates."
+			# Update that thang
+			for row in cursor:
+				row[0] = ref_id
+				row[1] = int(number[0])
+				row[2] = len(dates)
+				row[3] = row[1]/row[2]
+				print row
+				cursor.updateRow(row)
+			del cursor
 
-		# Iterate through all elements of that lake
-		count_cursor = arcpy.da.SearchCursor(file, ['date'])
-		for crow in count_cursor:
-			dates.add(crow[0])
+			# Add it to the master lake file
+			arcpy.Append_management(output, masterlakefile, 'NO_TEST')
 
-	    # Make a union of the thing
-		arcpy.Dissolve_management(file, output, multi_part="SINGLE_PART")
+			# Remove the temp file
+			arcpy.Delete_management(output)
+		
+		# Return geoprocessing specific errors
+		except arcpy.ExecuteError:    
+			# Display in terminal
+			print("ERROR: arcpy.ExecuteError")
+			arcpy.AddError(arcpy.GetMessages(2))
+			# Report in logfile
+			logFile.write(str(datetime.now()) + " ERROR: arcpy.ExecuteError")
+			logFile.write(arcpy.GetMessages(2))
+			logFile.flush()
 
-		# Get ready to add reference stuff to the thing
-		arcpy.AddField_management(output, "ref_id", "STRING")
-		arcpy.AddField_management(output, "n", "SHORT")
-		arcpy.AddField_management(output, "n_real", "SHORT")
-		arcpy.AddField_management(output, "n_ratio", "SHORT")
-
-		# This cursor will let up change up that reference id
-		cursor = arcpy.da.UpdateCursor(output, ["ref_id", "n", "n_real", "n_ratio"])
-
-		# Update that thang
-		for row in cursor:
-			row[0] = ref_id
-			row[1] = int(number[0])
-			row[2] = len(dates)
-			row[3] = row[1]/row[2]
-			cursor.updateRow(row)
-		del cursor
-
-		# Add it to the master lake file
-		arcpy.Append_management(output, masterlakefile, 'NO_TEST')
-
-		# Remove the temp file
-		arcpy.Delete_management(output)
+		# Return any other type of error
+		except:
+			# Display in terminal
+			e = sys.exc_info()[1]
+			print("ERROR: default error")
+			print(e.args[0])
+			# Report in logfile
+			logFile.write(str(datetime.now()) + " ERROR: default error")
+			logFile.write(e.args[0])
+			logFile.flush()
 
 	print "Success!"
+
+	logFile.close()
 
 # Execute
 if __name__ == "__main__":

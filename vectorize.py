@@ -8,9 +8,10 @@ import numpy as np
 from glob import glob
 import gc
 import os
+import re 
 
 # Define the function we'll run from the command line
-def objectifyRaster (rasterName):
+def objectifyRaster (rasterName, folderName):
 	# Get licensed
 	if arcpy.CheckExtension("Spatial"):  
 		arcpy.CheckOutExtension("Spatial")  
@@ -24,13 +25,13 @@ def objectifyRaster (rasterName):
 	#####################################################
 	####				VECTORIZE IT				 ####
 	#####################################################
-	inputRasterFilename = '/rasters/annual/' + rasterName + '.tif'
+	inputRasterFilename = '/rasters/' + folderName + '/' + rasterName + '.tif'
 	# Set up temp files names
 	tempRasterFilename = '/temp/rasters/' + rasterName + '.tif'
 	tempMorphRasterFilename = '/temp/rasters/' + rasterName + '_morph.tif'
 	tempShapesFilename = '/temp/polygons/' + rasterName + '.shp'
 	# Set up our output
-	outputShapesFilename = "/polygons/annual/" + rasterName + ".shp"
+	outputShapesFilename = "/polygons/" + folderName + '/' + rasterName + ".shp"
 	# Clear potiential old output
 	if arcpy.Exists(tempRasterFilename):
 		arcpy.Delete_management(tempRasterFilename)
@@ -90,8 +91,28 @@ def objectifyRaster (rasterName):
 	# Copy it over
 	print "Processing " + tempShapesFilename + " to " + outputShapesFilename + "..."
 	arcpy.CopyFeatures_management(tempShapesFilename, outputShapesFilename)
-	# # Get the date and location
-	# date = int(rasterName[17:25])
+	# Get the date and location
+	dateCode = { 
+		"1_": "1",
+		"2_": "2",
+		"3_": "3",
+		"4_": "4",
+		"5_": "5",
+		"6_": "6",
+		"7_": "7",
+		"8_": "8",
+		"9_": "9",
+		"10_": "10",
+		"11_": "11",
+		"12_": "12",
+		"7_9_": "13",
+		"5_6_": "20",
+		"6_7_": "21",
+		"7_8_": "22",
+		"8_9_": "23",
+		"9_10_": "24",
+	} 
+	date = int(re.search(r"(?<=Y)[0-9]+", rasterName).group() + dateCode[re.search(r"(?<=M)[0-9_]+", rasterName).group()])
 	# loc = (int(rasterName[10:13]), int(rasterName[13:16]))
 	# print "Date:", date, "Location:", loc
 	###################################
@@ -117,9 +138,9 @@ def objectifyRaster (rasterName):
 		row[1] = row[0][0] 
 		row[2] = row[0][1]
 		# Write date and location
-		# row[5] = date
-		# row[6] = loc[0]
-		# row[7] = loc[1]
+		row[3] = date
+		# row[4] = loc[0]
+		# row[5] = loc[1]
 		# Save it
 		cursor.updateRow(row)
 	# Clean up cursor objects
@@ -161,9 +182,9 @@ def objectifyRaster (rasterName):
 # Execute
 if __name__ == "__main__":
 	print "Loading script..."
-	l=os.listdir(r"C:\Users\hengstam\Desktop\projects\proglacial\rasters\annual")
+	l=os.listdir(r"C:\Users\hengstam\Desktop\projects\proglacial\rasters/"+sys.argv[1])
 	li=[x.split('.')[0] for x in l]
-	print li
-	##li = ["A1_M7_9_VIS_BR_LVR1_DEM", "A2_M7_9_VIS_BR_LVR1_DEM", "A3_M7_9_VIS_BR_LVR1_DEM"]
+	# print li
+	# li = ["A1_Y2013_M7_9_VIS_BR_LVR1_DEM"]
 	for filepath in li:
-		objectifyRaster(filepath)
+		objectifyRaster(filepath, sys.argv[1])
